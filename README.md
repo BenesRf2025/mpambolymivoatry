@@ -31,9 +31,9 @@ Avant de commencer, installez sur votre machine :
 
 ## 🚀 Installation (Étape par Étape)
 
+```bash
 # 1. Cloner le repo
 
-```bash
 git clone https://github.com/BenesRf2025/mpambolymivoatry.git
 cd mpamboly-backend
 git checkout feature/backend
