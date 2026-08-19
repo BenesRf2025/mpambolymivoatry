@@ -34,6 +34,11 @@ async function bootstrap() {
     .addTag('Crops', 'Gestion des cultures')
     .addTag('Harvests', 'Gestion des récoltes')
     .addTag('Inspections', 'Inspections des parcelles')
+    .addTag('Marketplace - Shops', 'Gestion des boutiques')
+    .addTag('Marketplace - Products', 'Produits par boutique')
+    .addTag('Marketplace - Catalog', 'Catalogue public des produits')
+    .addTag('Marketplace - Orders', 'Commandes')
+    .addTag('Marketplace - Payment', 'Paiement (simulé)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
