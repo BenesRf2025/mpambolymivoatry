@@ -1,0 +1,300 @@
+openapi: 3.0.3
+info:
+  title: Mpamboly API (Minimal)
+  version: "0.1.0"
+  description: Minimal OpenAPI spec covering key endpoints used by the mobile app.
+servers:
+  - url: https://api.example.com
+paths:
+  /api/auth/login:
+    post:
+      summary: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Auth success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/sensors:
+    get:
+      summary: List sensor nodes
+      responses:
+        '200':
+          description: List of sensors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IoTSensorNode'
+  /api/sensors/{id}/telemetry:
+    post:
+      summary: Post telemetry for a sensor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Telemetry'
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryAck'
+  /api/listings:
+    get:
+      summary: Get marketplace listings
+      responses:
+        '200':
+          description: Listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MarketItem'
+    post:
+      summary: Create a listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewListing'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketItem'
+  /api/inspections:
+    post:
+      summary: Create field inspection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Inspection'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inspection'
+  /api/sync/batch:
+    post:
+      summary: Apply queued offline actions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncBatch'
+      responses:
+        '200':
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResult'
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+      required: [phone, password]
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    IoTSensorNode:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [online, offline, unknown]
+        lastSeen:
+          type: string
+          format: date-time
+        soilMoisture:
+          type: number
+        battery:
+          type: number
+        location:
+          type: object
+          properties:
+            lat:
+              type: number
+            lon:
+              type: number
+    Telemetry:
+      type: object
+      properties:
+        soilMoisture:
+          type: number
+        battery:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+      required: [soilMoisture, timestamp]
+    TelemetryAck:
+      type: object
+      properties:
+        id:
+          type: string
+        receivedAt:
+          type: string
+          format: date-time
+    MarketItem:
+      type: object
+      properties:
+        id:
+          type: string
+        sellerId:
+          type: string
+        sellerType:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        unit:
+          type: string
+        quantity:
+          type: number
+        price:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+    NewListing:
+      type: object
+      properties:
+        sellerId:
+          type: string
+        sellerType:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        unit:
+          type: string
+        quantity:
+          type: number
+        price:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+      required: [sellerId, sellerType, name, price]
+    Inspection:
+      type: object
+      properties:
+        id:
+          type: string
+        farmerId:
+          type: string
+        cropId:
+          type: string
+        photos:
+          type: array
+          items:
+            type: string
+        voiceNotes:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+        location:
+          type: object
+          properties:
+            lat:
+              type: number
+            lon:
+              type: number
+        createdAt:
+          type: string
+          format: date-time
+      required: [farmerId, cropId]
+    SyncAction:
+      type: object
+      properties:
+        type:
+          type: string
+        clientId:
+          type: string
+        payload:
+          type: object
+    SyncBatch:
+      type: object
+      properties:
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncAction'
+    SyncResult:
+      type: object
+      properties:
+        applied:
+          type: array
+          items:
+            type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              clientId:
+                type: string
+              message:
+                type: string

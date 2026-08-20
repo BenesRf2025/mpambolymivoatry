@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Mpamboly Mivoatry",
+    "slug": "mpamboly-mivoatry",
+    "scheme": "mpamboly",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2D5A27"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "mg.mpamboly.mivoatry"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2D5A27"
+      },
+      "package": "mg.mpamboly.mivoatry"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
