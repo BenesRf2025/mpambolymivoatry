@@ -6,7 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AgricultureModule } from './modules/agriculture/agriculture.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
-
+import { AssociationModule } from './modules/association/association.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -27,6 +27,7 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
     AuthModule,
     AgricultureModule,
     MarketplaceModule,
+    AssociationModule,
   ],
 })
 export class AppModule {}

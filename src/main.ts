@@ -39,6 +39,7 @@ async function bootstrap() {
     .addTag('Marketplace - Catalog', 'Catalogue public des produits')
     .addTag('Marketplace - Orders', 'Commandes')
     .addTag('Marketplace - Payment', 'Paiement (simulé)')
+    .addTag('Association', 'Groupements, coopératives, stock mutualisé')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

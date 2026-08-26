@@ -7,16 +7,21 @@ import {
   Param,
   UseGuards,
   Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { ShopService } from './shop.service';
 import { CreateShopDto } from '../dto/create-shop.dto';
+import { AssociationService } from '../../association/association.service'; // 🆕
 
 @ApiTags('Marketplace - Shops')
 @Controller('shops')
 export class ShopController {
-  constructor(private readonly shopService: ShopService) {}
+  constructor(
+    private readonly shopService: ShopService,
+    private readonly associationService: AssociationService, // 🆕
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Lister toutes les boutiques actives (public)' })
@@ -44,5 +49,28 @@ export class ShopController {
   @ApiOperation({ summary: 'Lister mes boutiques' })
   findMine(@Request() req) {
     return this.shopService.findByOwner(req.user.userId);
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Post('association/:associationId')
+  @ApiOperation({
+    summary: 'Créer la boutique collective (gestionnaire uniquement)',
+  })
+  async createForAssociation(
+    @Request() req,
+    @Param('associationId') associationId: string,
+    @Body() dto: CreateShopDto,
+  ) {
+    const isManager = await this.associationService.isGestionnaire(
+      associationId,
+      req.user.userId,
+    );
+    if (!isManager) {
+      throw new ForbiddenException(
+        'Seul un gestionnaire peut créer la boutique collective',
+      );
+    }
+    return this.shopService.createForAssociation(associationId, dto);
   }
 }

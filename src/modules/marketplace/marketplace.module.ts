@@ -20,6 +20,8 @@ import { PaymentService } from './payment/payment.service';
 import { PaymentController } from './payment/payment.controller';
 import { SimulatedPaymentProvider } from './payment/providers/simulated-payment.provider';
 
+import { AssociationModule } from '../association/association.module'; // 🆕
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -28,8 +30,9 @@ import { SimulatedPaymentProvider } from './payment/providers/simulated-payment.
       Order,
       OrderItem,
       PaymentTransaction,
-      Harvest, // nécessaire pour ProductService (décrémentation)
+      Harvest,
     ]),
+    AssociationModule, // 🆕
   ],
   controllers: [
     ShopController,

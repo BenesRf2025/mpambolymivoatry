@@ -61,4 +61,21 @@ export class ShopService {
     }
     return shop;
   }
+  // src/modules/marketplace/shop/shop.service.ts — méthode à ajouter
+
+  async createForAssociation(
+    associationId: string,
+    dto: CreateShopDto,
+  ): Promise<Shop> {
+    const shop = this.shopRepo.create({
+      name: dto.name,
+      description: dto.description ?? null,
+      address: dto.address ?? null,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
+      ownerUserId: null,
+      ownerAssociationId: associationId,
+    });
+    return this.shopRepo.save(shop);
+  }
 }
