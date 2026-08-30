@@ -36,5 +36,27 @@ services:
     ports:
       - '6379:6379'
 
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mpamboly_backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: mpamboly
+      DB_PASSWORD: mpamboly_dev
+      DB_NAME: mpamboly_db
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src:/usr/src/app/src
+    command: npm run start:dev
+
 volumes:
   postgres_data:

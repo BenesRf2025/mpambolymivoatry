@@ -8,6 +8,7 @@ import { AgricultureModule } from './modules/agriculture/agriculture.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { AssociationModule } from './modules/association/association.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
+import { FamilyModule } from './modules/family/family.module';
 
 @Module({
   imports: [
@@ -22,12 +23,13 @@ import { DeliveryModule } from './modules/delivery/delivery.module';
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true, // ⚠️ OK pour hackathon/dev, à retirer en prod
+        synchronize: true,
       }),
     }),
     UsersModule,
     AuthModule,
     AgricultureModule,
+    FamilyModule,
     MarketplaceModule,
     AssociationModule,
     DeliveryModule,
