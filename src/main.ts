@@ -5,7 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { UsersService } from './modules/users/users.service';
 
-async function bootstrap() {
+export async function createApp() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -53,8 +53,17 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(3000);
+  return app;
   console.log(`🚀 Application démarrée sur http://localhost:3000`);
   console.log(`📚 Documentation Swagger sur http://localhost:3000/api/docs`);
 }
-bootstrap();
+
+async function bootstrap() {
+  const app = await createApp();
+  const port = Number(process.env.PORT) || 3000;
+  await app.listen(port);
+}
+
+if (require.main === module) {
+  bootstrap();
+}
