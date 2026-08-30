@@ -4,8 +4,6 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
-  Inject,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -13,11 +11,10 @@ import { randomUUID } from 'crypto';
 import { Order } from '../entities/order.entity';
 import { OrderItem } from '../entities/order-item.entity';
 import { Product } from '../entities/product.entity';
-import { Shop } from '../entities/shop.entity';
+import { Shop } from '../entities/shop.entity'; // 🆕
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { OrderStatus } from '../enums/order-status.enum';
 import { ProductService } from '../product/product.service';
-import { DeliveryService } from '../../delivery/delivery/delivery.service';
 
 @Injectable()
 export class OrderService {
@@ -26,12 +23,10 @@ export class OrderService {
     private readonly orderRepo: Repository<Order>,
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
-    @InjectRepository(Shop)
+    @InjectRepository(Shop) // 🆕
     private readonly shopRepo: Repository<Shop>,
     private readonly productService: ProductService,
     private readonly dataSource: DataSource,
-    @Inject(forwardRef(() => DeliveryService))
-    private readonly deliveryService: DeliveryService,
   ) {}
 
   async create(buyerUserId: string, dto: CreateOrderDto): Promise<Order> {
@@ -52,6 +47,7 @@ export class OrderService {
       );
     }
 
+    // 🆕 Vérification anti-auto-achat
     const shop = await this.shopRepo.findOne({ where: { id: dto.shopId } });
     if (!shop) {
       throw new NotFoundException('Boutique introuvable');
@@ -123,6 +119,7 @@ export class OrderService {
     });
   }
 
+  // 🆕 Vérifie que c'est bien le propriétaire de la boutique qui accepte/refuse
   private async checkShopOwnership(
     shopId: string,
     userId: string,
@@ -138,7 +135,7 @@ export class OrderService {
 
   async accept(orderId: string, userId: string): Promise<Order> {
     const order = await this.findOne(orderId);
-    await this.checkShopOwnership(order.shopId, userId);
+    await this.checkShopOwnership(order.shopId, userId); // 🆕 vérification réelle
 
     if (order.status !== OrderStatus.ENVOYEE) {
       throw new BadRequestException(
@@ -153,7 +150,7 @@ export class OrderService {
 
   async refuse(orderId: string, userId: string): Promise<Order> {
     const order = await this.findOne(orderId);
-    await this.checkShopOwnership(order.shopId, userId);
+    await this.checkShopOwnership(order.shopId, userId); // 🆕 vérification réelle
 
     if (order.status !== OrderStatus.ENVOYEE) {
       throw new BadRequestException(
@@ -174,7 +171,7 @@ export class OrderService {
       );
     }
 
-    const paidOrder = await this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async (manager) => {
       for (const item of order.items) {
         await this.productService.decrementStock(
           item.productId,
@@ -185,17 +182,6 @@ export class OrderService {
       order.status = OrderStatus.PAYEE;
       return manager.save(order);
     });
-
-    const shop = await this.shopRepo.findOne({ where: { id: order.shopId } });
-    await this.deliveryService.createForOrder(
-      order.id,
-      order.shopId,
-      shop?.latitude ?? null,
-      shop?.longitude ?? null,
-      order.deliveryAddress,
-    );
-
-    return paidOrder;
   }
 
   async updateStatus(orderId: string, newStatus: OrderStatus): Promise<Order> {

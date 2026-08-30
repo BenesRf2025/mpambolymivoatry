@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Shop } from '../entities/shop.entity';
 import { CreateShopDto } from '../dto/create-shop.dto';
-import { UpdateShopDto } from '../dto/update-shop.dto';
 
 @Injectable()
 export class ShopService {
@@ -77,16 +76,6 @@ export class ShopService {
       ownerUserId: null,
       ownerAssociationId: associationId,
     });
-    return this.shopRepo.save(shop);
-  }
-  // Ajout dans shop.service.ts
-  async update(
-    shopId: string,
-    userId: string,
-    dto: UpdateShopDto,
-  ): Promise<Shop> {
-    const shop = await this.checkOwnership(shopId, userId);
-    Object.assign(shop, dto);
     return this.shopRepo.save(shop);
   }
 }

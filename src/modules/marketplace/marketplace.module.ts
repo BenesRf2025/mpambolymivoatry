@@ -1,5 +1,5 @@
 // src/modules/marketplace/marketplace.module.ts
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Shop } from './entities/shop.entity';
@@ -21,7 +21,6 @@ import { PaymentController } from './payment/payment.controller';
 import { SimulatedPaymentProvider } from './payment/providers/simulated-payment.provider';
 
 import { AssociationModule } from '../association/association.module'; // 🆕
-import { DeliveryModule } from '../delivery/delivery.module';
 
 @Module({
   imports: [
@@ -34,7 +33,6 @@ import { DeliveryModule } from '../delivery/delivery.module';
       Harvest,
     ]),
     AssociationModule, // 🆕
-    forwardRef(() => DeliveryModule), // 🆕
   ],
   controllers: [
     ShopController,
