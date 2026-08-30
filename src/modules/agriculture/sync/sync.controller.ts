@@ -1,11 +1,5 @@
 // src/modules/agriculture/sync/sync.controller.ts
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -23,7 +17,7 @@ export class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
   @Post('batch')
-  @ApiOperation({ summary: 'Synchroniser un batch d\'actions offline' })
+  @ApiOperation({ summary: "Synchroniser un batch d'actions offline" })
   @ApiResponse({ status: 200, description: 'Synchronisation traitée' })
   syncBatch(@Request() req, @Body() payload: { actions: any[] }) {
     return this.syncService.processBatch(req.user.userId, payload.actions);

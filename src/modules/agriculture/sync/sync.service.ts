@@ -11,7 +11,10 @@ export class SyncService {
     private readonly syncActionRepo: Repository<SyncAction>,
   ) {}
 
-  async processBatch(userId: string, actions: any[]): Promise<{ applied: string[]; errors: any[] }> {
+  async processBatch(
+    userId: string,
+    actions: any[],
+  ): Promise<{ applied: string[]; errors: any[] }> {
     const applied: string[] = [];
     const errors: any[] = [];
 

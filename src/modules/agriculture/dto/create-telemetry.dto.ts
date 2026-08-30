@@ -17,7 +17,7 @@ export class CreateTelemetryDto {
   @IsNumber()
   soilTemperature?: number;
 
-  @ApiPropertyOptional({ description: 'Humidité de l\'air (%)' })
+  @ApiPropertyOptional({ description: "Humidité de l'air (%)" })
   @IsOptional()
   @IsNumber()
   airHumidity?: number;

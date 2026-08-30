@@ -65,7 +65,7 @@ export class UsersService {
   async findById(id: string): Promise<User> {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
-    return user as User;
+    return user;
   }
 
   async seedDefaultAdmin() {

@@ -12,7 +12,13 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Family, FamilyMember, FamilyToken, ActivityTrace, User]),
+    TypeOrmModule.forFeature([
+      Family,
+      FamilyMember,
+      FamilyToken,
+      ActivityTrace,
+      User,
+    ]),
     UsersModule,
   ],
   controllers: [FamilyController],

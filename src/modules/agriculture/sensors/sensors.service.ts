@@ -22,7 +22,10 @@ export class SensorsService {
     });
   }
 
-  async createTelemetry(sensorId: string, dto: CreateTelemetryDto): Promise<Telemetry> {
+  async createTelemetry(
+    sensorId: string,
+    dto: CreateTelemetryDto,
+  ): Promise<Telemetry> {
     const sensor = await this.sensorRepo.findOne({ where: { id: sensorId } });
     if (!sensor) {
       throw new NotFoundException('Capteur introuvable');
@@ -45,7 +48,8 @@ export class SensorsService {
     sensor.batteryLevel = dto.battery ?? sensor.batteryLevel;
     sensor.soilTemperature = dto.soilTemperature ?? sensor.soilTemperature;
     sensor.airHumidity = dto.airHumidity ?? sensor.airHumidity;
-    sensor.rainfallMmPerHour = dto.rainfallMmPerHour ?? sensor.rainfallMmPerHour;
+    sensor.rainfallMmPerHour =
+      dto.rainfallMmPerHour ?? sensor.rainfallMmPerHour;
     sensor.lastTransmission = now;
     await this.sensorRepo.save(sensor);
 

@@ -35,7 +35,7 @@ Avant de commencer, installez sur votre machine :
 # 1. Cloner le repo
 
 git clone https://github.com/BenesRf2025/mpambolymivoatry.git
-cd mpamboly-backend
+cd mpambolymivoatry
 git checkout feature/backend
 
 # 2. Installer les dépendances

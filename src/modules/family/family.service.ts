@@ -46,7 +46,9 @@ export class FamilyService {
       await this.familyMemberRepo.save({
         familyId: savedFamily.id,
         userId: dto.headUserId,
-        userName: (await this.userRepo.findOne({ where: { id: dto.headUserId } }))?.fullName ?? '',
+        userName:
+          (await this.userRepo.findOne({ where: { id: dto.headUserId } }))
+            ?.fullName ?? '',
         roleInFamily: 'head',
       });
     }
@@ -54,8 +56,13 @@ export class FamilyService {
     return savedFamily;
   }
 
-  async generateToken(dto: GenerateFamilyTokenDto, createdBy: string): Promise<{ token: string }> {
-    const family = await this.familyRepo.findOne({ where: { id: dto.familyId } });
+  async generateToken(
+    dto: GenerateFamilyTokenDto,
+    createdBy: string,
+  ): Promise<{ token: string }> {
+    const family = await this.familyRepo.findOne({
+      where: { id: dto.familyId },
+    });
     if (!family) {
       throw new NotFoundException('Famille introuvable');
     }
@@ -73,7 +80,9 @@ export class FamilyService {
     return { token: tokenString };
   }
 
-  async registerWithFamilyToken(dto: RegisterWithFamilyTokenDto): Promise<{ user: User; token: string }> {
+  async registerWithFamilyToken(
+    dto: RegisterWithFamilyTokenDto,
+  ): Promise<{ user: User; token: string }> {
     const familyToken = await this.familyTokenRepo.findOne({
       where: { token: dto.familyToken, isActive: true },
       relations: { family: true },
@@ -84,7 +93,9 @@ export class FamilyService {
     }
 
     if (familyToken.usedCount >= familyToken.maxUses) {
-      throw new BadRequestException('Ce jeton a atteint le nombre maximum d\'utilisations');
+      throw new BadRequestException(
+        "Ce jeton a atteint le nombre maximum d'utilisations",
+      );
     }
 
     const existingUser = await this.userRepo.findOne({
@@ -125,25 +136,31 @@ export class FamilyService {
     };
   }
 
-  async getFamilyMembers(familyId: string, requestingUserId: string): Promise<FamilyMember[]> {
+  async getFamilyMembers(
+    familyId: string,
+    requestingUserId: string,
+  ): Promise<FamilyMember[]> {
     const member = await this.familyMemberRepo.findOne({
       where: { familyId, userId: requestingUserId },
     });
 
     if (!member) {
-      throw new ForbiddenException('Vous n\'êtes pas membre de cette famille');
+      throw new ForbiddenException("Vous n'êtes pas membre de cette famille");
     }
 
     return this.familyMemberRepo.find({ where: { familyId } });
   }
 
-  async getFamilyActivities(familyId: string, requestingUserId: string): Promise<ActivityTrace[]> {
+  async getFamilyActivities(
+    familyId: string,
+    requestingUserId: string,
+  ): Promise<ActivityTrace[]> {
     const member = await this.familyMemberRepo.findOne({
       where: { familyId, userId: requestingUserId },
     });
 
     if (!member) {
-      throw new ForbiddenException('Vous n\'êtes pas membre de cette famille');
+      throw new ForbiddenException("Vous n'êtes pas membre de cette famille");
     }
 
     return this.activityTraceRepo.find({

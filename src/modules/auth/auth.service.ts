@@ -15,7 +15,12 @@ export class AuthService {
 
   async register(dto: CreateUserDto) {
     const user = await this.usersService.create(dto);
-    return this.generateToken(user.id, user.phoneNumber, user.roles, user.fullName);
+    return this.generateToken(
+      user.id,
+      user.phoneNumber,
+      user.roles,
+      user.fullName,
+    );
   }
 
   async login(dto: LoginDto) {
@@ -27,7 +32,12 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides');
     }
 
-    return this.generateToken(user.id, user.phoneNumber, user.roles, user.fullName);
+    return this.generateToken(
+      user.id,
+      user.phoneNumber,
+      user.roles,
+      user.fullName,
+    );
   }
 
   async getProfile(userId: string) {
@@ -40,7 +50,12 @@ export class AuthService {
     };
   }
 
-  private generateToken(userId: string, phoneNumber: string, roles: string[], fullName?: string) {
+  private generateToken(
+    userId: string,
+    phoneNumber: string,
+    roles: string[],
+    fullName?: string,
+  ) {
     const payload = { sub: userId, phoneNumber, roles };
     return {
       token: this.jwtService.sign(payload),

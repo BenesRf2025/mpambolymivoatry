@@ -1,5 +1,11 @@
 // src/modules/family/dto/register-with-family-token.dto.ts
-import { IsString, IsOptional, IsEmail, Matches, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEmail,
+  Matches,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../users/enums/user-role.enum';
 
@@ -14,7 +20,7 @@ export class RegisterWithFamilyTokenDto {
   })
   phoneNumber: string;
 
-  @ApiPropertyOptional({ description: 'Email de l\'utilisateur' })
+  @ApiPropertyOptional({ description: "Email de l'utilisateur" })
   @IsOptional()
   @IsEmail()
   email?: string;

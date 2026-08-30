@@ -7,7 +7,10 @@ export class GenerateFamilyTokenDto {
   @IsUUID()
   familyId: string;
 
-  @ApiPropertyOptional({ description: 'Nombre max d\'utilisations (défaut: 10)', minimum: 1 })
+  @ApiPropertyOptional({
+    description: "Nombre max d'utilisations (défaut: 10)",
+    minimum: 1,
+  })
   @IsOptional()
   @IsInt()
   @Min(1)

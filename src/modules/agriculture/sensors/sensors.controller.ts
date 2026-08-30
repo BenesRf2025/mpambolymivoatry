@@ -36,7 +36,10 @@ export class SensorsController {
   @ApiOperation({ summary: 'Envoyer une télémesure' })
   @ApiResponse({ status: 201, description: 'Télémesure enregistrée' })
   @ApiResponse({ status: 404, description: 'Capteur introuvable' })
-  async postTelemetry(@Param('sensorId') sensorId: string, @Body() dto: CreateTelemetryDto) {
+  async postTelemetry(
+    @Param('sensorId') sensorId: string,
+    @Body() dto: CreateTelemetryDto,
+  ) {
     return this.sensorsService.createTelemetry(sensorId, dto);
   }
 }

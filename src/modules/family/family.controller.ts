@@ -39,7 +39,7 @@ export class FamilyController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'S\'inscrire avec un jeton de famille' })
+  @ApiOperation({ summary: "S'inscrire avec un jeton de famille" })
   @ApiBody({ type: RegisterWithFamilyTokenDto })
   async registerWithFamilyToken(@Body() dto: RegisterWithFamilyTokenDto) {
     return this.familyService.registerWithFamilyToken(dto);
