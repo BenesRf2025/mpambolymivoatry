@@ -7,10 +7,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { Association } from './entities/association.entity';
 import { AssociationMember } from './entities/association-member.entity';
 import { AssociationMemberRole } from './enums/association-member-role.enum';
+import { AssociationMemberStatus } from './enums/association-member-status.enum';
 import { CreateAssociationDto } from './dto/create-association.dto';
 import { Harvest } from '../agriculture/entities/harvest.entity';
 import { HarvestStatus } from '../agriculture/enums/harvest-status.enum';
@@ -64,6 +65,15 @@ export class AssociationService {
 
   async findAll(): Promise<Association[]> {
     return this.associationRepo.find({
+      where: { verified: true },
+      relations: { members: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getPendingAssociations(): Promise<Association[]> {
+    return this.associationRepo.find({
+      where: { verified: false },
       relations: { members: true },
       order: { createdAt: 'DESC' },
     });
@@ -80,13 +90,13 @@ export class AssociationService {
 
   async findByUser(userId: string): Promise<AssociationMember[]> {
     return this.memberRepo.find({
-      where: { userId, active: true },
+      where: { userId, status: Not(AssociationMemberStatus.REJECTED) },
       relations: { association: true },
     });
   }
 
   // ─────────────────────────────────────────
-  // ADHÉSION (auto-inscription libre)
+  // ADHÉSION (demande en attente d'approbation du gestionnaire)
   // ─────────────────────────────────────────
 
   async join(
@@ -100,13 +110,21 @@ export class AssociationService {
     });
 
     if (existing) {
-      if (existing.active) {
+      if (existing.status === AssociationMemberStatus.APPROVED && existing.active) {
         throw new ConflictException(
           'Vous êtes déjà membre de cette association',
         );
       }
-      // Réactive une ancienne adhésion si l'utilisateur avait quitté
-      existing.active = true;
+      if (existing.status === AssociationMemberStatus.PENDING) {
+        throw new ConflictException(
+          'Une demande d\'adhésion est déjà en attente',
+        );
+      }
+      // REJECTED ou ancien membre inactif -> on renouvelle la demande
+      existing.status = AssociationMemberStatus.PENDING;
+      existing.active = false;
+      existing.memberRole = AssociationMemberRole.MEMBRE;
+      existing.revenuePercentage = 0;
       return this.memberRepo.save(existing);
     }
 
@@ -115,16 +133,22 @@ export class AssociationService {
       userId,
       memberRole: AssociationMemberRole.MEMBRE,
       revenuePercentage: 0,
-      active: true,
+      active: false,
+      status: AssociationMemberStatus.PENDING,
     });
 
     return this.memberRepo.save(member);
   }
 
   async leave(associationId: string, userId: string): Promise<void> {
-    const member = await this.getMemberOrThrow(associationId, userId);
+    const member = await this.memberRepo.findOne({
+      where: { associationId, userId },
+    });
+    if (!member) {
+      throw new NotFoundException('Vous n\'appartenez pas à cette association');
+    }
 
-    if (member.memberRole === AssociationMemberRole.GESTIONNAIRE) {
+    if (member.memberRole === AssociationMemberRole.GESTIONNAIRE && member.active) {
       const activeManagers = await this.memberRepo.count({
         where: {
           associationId,
@@ -139,7 +163,9 @@ export class AssociationService {
       }
     }
 
+    // Quitte (membre actif) ou annule une demande en attente
     member.active = false;
+    member.status = AssociationMemberStatus.REJECTED;
     await this.memberRepo.save(member);
   }
 
@@ -201,6 +227,42 @@ export class AssociationService {
 
     targetMember.active = false;
     await this.memberRepo.save(targetMember);
+  }
+
+  // ─────────────────────────────────────────
+  // APPROBATION DES DEMANDES (réservé au gestionnaire)
+  // ─────────────────────────────────────────
+
+  async getPendingRequests(
+    associationId: string,
+    requesterUserId: string,
+  ): Promise<AssociationMember[]> {
+    await this.checkIsGestionnaire(associationId, requesterUserId);
+    return this.memberRepo.find({
+      where: { associationId, status: AssociationMemberStatus.PENDING },
+    });
+  }
+
+  async approveMembership(
+    associationId: string,
+    targetUserId: string,
+    approved: boolean,
+    requesterUserId: string,
+  ): Promise<AssociationMember> {
+    await this.checkIsGestionnaire(associationId, requesterUserId);
+
+    const targetMember = await this.memberRepo.findOne({
+      where: { associationId, userId: targetUserId },
+    });
+    if (!targetMember) {
+      throw new NotFoundException('Demande d\'adhésion introuvable');
+    }
+
+    targetMember.status = approved
+      ? AssociationMemberStatus.APPROVED
+      : AssociationMemberStatus.REJECTED;
+    targetMember.active = approved;
+    return this.memberRepo.save(targetMember);
   }
 
   // ─────────────────────────────────────────

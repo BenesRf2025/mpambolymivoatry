@@ -9,6 +9,7 @@ import {
   Param,
   UseGuards,
   Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,6 +17,7 @@ import { AssociationService } from './association.service';
 import { CreateAssociationDto } from './dto/create-association.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import { UpdateRevenuePercentageDto } from './dto/update-revenue-percentage.dto';
+import { ApproveMembershipDto } from './dto/approve-membership.dto';
 
 @ApiTags('Association')
 @Controller('associations')
@@ -26,6 +28,17 @@ export class AssociationController {
   @ApiOperation({ summary: 'Lister toutes les associations (public)' })
   findAll() {
     return this.associationService.findAll();
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Get('admin/pending')
+  @ApiOperation({ summary: 'Associations en attente d\'approbation (admin)' })
+  getPending(@Request() req) {
+    if (!req.user.roles?.includes('administrateur')) {
+      throw new ForbiddenException('Seul un administrateur peut voir les demandes');
+    }
+    return this.associationService.getPendingAssociations();
   }
 
   @Get(':id')
@@ -63,9 +76,35 @@ export class AssociationController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Post(':id/join')
-  @ApiOperation({ summary: 'Rejoindre une association (auto-inscription)' })
+  @ApiOperation({ summary: 'Demander à rejoindre une association (en attente d\'approbation)' })
   join(@Request() req, @Param('id') id: string) {
     return this.associationService.join(id, req.user.userId);
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/requests')
+  @ApiOperation({ summary: 'Demandes d\'adhésion en attente (gestionnaire)' })
+  getPendingRequests(@Request() req, @Param('id') id: string) {
+    return this.associationService.getPendingRequests(id, req.user.userId);
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/members/:userId/approve')
+  @ApiOperation({ summary: 'Approuver/refuser une demande d\'adhésion (gestionnaire)' })
+  approveMembership(
+    @Request() req,
+    @Param('id') associationId: string,
+    @Param('userId') targetUserId: string,
+    @Body() dto: ApproveMembershipDto,
+  ) {
+    return this.associationService.approveMembership(
+      associationId,
+      targetUserId,
+      dto.approved,
+      req.user.userId,
+    );
   }
 
   @ApiBearerAuth('JWT-auth')
@@ -128,5 +167,18 @@ export class AssociationController {
       targetUserId,
       req.user.userId,
     );
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/verify')
+  @ApiOperation({ summary: 'Approuver la création de l\'association (admin)' })
+  verify(@Request() req, @Param('id') id: string) {
+    if (!req.user.roles?.includes('administrateur')) {
+      throw new ForbiddenException(
+        'Seul un administrateur peut approuver la création',
+      );
+    }
+    return this.associationService.setVerified(id, true);
   }
 }
