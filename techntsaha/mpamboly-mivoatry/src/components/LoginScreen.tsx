@@ -31,6 +31,7 @@ interface LoginScreenProps {
   language: Language;
   onToggleLanguage: () => void;
   onLogin: (role: UserRole, customProfile?: FarmerProfile, destinationScreen?: ScreenType) => void;
+  onSwitchToSignup: () => void;
 }
 
 interface RoleSlideItem {
@@ -53,7 +54,7 @@ interface RoleSlideItem {
   defaultUser: { name: string; phone: string; location: string };
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ language, onToggleLanguage, onLogin }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ language, onToggleLanguage, onLogin, onSwitchToSignup }) => {
   const [activeTab, setActiveTab] = useState<'carousel' | 'form'>('carousel');
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
   const [isAutoPlayActive, setIsAutoPlayActive] = useState<boolean>(true);
@@ -687,6 +688,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ language, onToggleLang
             : "Voatahiry ato an-toerana ny angona · Miasa 100% any an-tsaha na tsy misy aterineto aza"}
         </Text>
       </View>
+
+      <Pressable onPress={onSwitchToSignup} className="mt-3 py-2 items-center">
+        <Text className="text-xs font-bold text-brand-green">
+          {language === 'fr' ? 'Pas encore de compte ?' : 'Tsy manana kaonty ankehitriny ?'}
+          <Text className="underline"> {language === 'fr' ? 'Créer un compte' : 'Hamorona kaonty'}</Text>
+        </Text>
+      </Pressable>
     </ScrollView>
   );
 };

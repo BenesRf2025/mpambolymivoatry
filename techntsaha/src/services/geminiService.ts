@@ -5,7 +5,7 @@ import * as Speech from 'expo-speech';
 // Si vous déployez votre propre backend Gemini (voir server.ts d'origine),
 // renseignez EXPO_PUBLIC_API_BASE_URL dans un fichier .env (ex: https://mon-api.exemple.com).
 // Sans backend configuré, l'appli utilise directement le moteur de secours agronomique local.
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || '';
+const API_BASE_URL = "AIzaSyBW9J9qy183BqTlBNTPy2V_WFJOgkxEj6c";
 
 export async function diagnosePlantIssue(params: {
   cropName: string;

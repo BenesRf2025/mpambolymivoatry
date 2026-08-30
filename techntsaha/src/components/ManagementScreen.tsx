@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Plus, ArrowUpRight, ArrowDownLeft, Trash2, MapPin } from '../lib/icons';
 import { FinancialEntry, FarmerProfile, Crop, Language } from '../types';
 import { translations } from '../data/translations';
+import { useHarvests, useCreateHarvest } from '../services/reactQueryHooks';
 
 interface ManagementScreenProps {
   farmer: FarmerProfile;
@@ -23,6 +24,8 @@ export const ManagementScreen: React.FC<ManagementScreenProps> = ({
 }) => {
   const t = translations[language];
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+
+  const harvestsQuery = useHarvests();
 
   const totalIncome = transactions.filter((tr) => tr.type === 'income').reduce((sum, tr) => sum + tr.amount, 0);
   const totalExpense = transactions.filter((tr) => tr.type === 'expense').reduce((sum, tr) => sum + tr.amount, 0);

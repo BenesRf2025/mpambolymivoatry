@@ -31,7 +31,6 @@ import {
 } from '../types';
 import { translations } from '../data/translations';
 import { OfflineIndicator } from './OfflineIndicator';
-import { RoleSelector } from './RoleSelector';
 
 interface HomeScreenProps {
   crops: Crop[];
@@ -86,7 +85,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 32 }}>
-      {/* Top Profile & Role Switching Header */}
+      {/* Top Profile Header */}
       <View className="flex-row justify-between items-start gap-2">
         <View>
           <View className="flex-row items-center gap-1.5">
@@ -112,7 +111,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
           {onLogout && (
             <Pressable
-              onPress={onLogout}
+              onPress={() => onNavigate('logout')}
               className="p-1.5 bg-brand-beige rounded-xl border border-[#C4BFB1]/50"
             >
               <LogOut className="w-4 h-4 text-[#B45309]" />
@@ -120,7 +119,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           )}
 
           <Pressable
-            onPress={onLogout}
+            onPress={() => onNavigate('logout')}
             className="w-9 h-9 rounded-xl bg-brand-beige items-center justify-center border-2 border-brand-green"
           >
             <View className="w-6 h-6 bg-brand-green rounded-lg items-center justify-center">
@@ -129,9 +128,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </Pressable>
         </View>
       </View>
-
-      {/* Role Selection Switcher */}
-      <RoleSelector currentRole={activeRole} onSelectRole={onSelectRole} lang={language} />
 
       {/* Region Selector Bar */}
       <Pressable

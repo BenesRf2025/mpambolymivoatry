@@ -1,19 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { CooperativeGroup } from '../types';
 import { translations } from '../data/translations';
-import { Users, Building2, Home, Scale, CheckCircle2, Send } from '../lib/icons';
+import {
+  Users,
+  Building2,
+  Home,
+  Scale,
+  CheckCircle2,
+  Send,
+  ChevronRight,
+  Phone,
+  MapPin,
+  Sprout,
+  ArrowLeft,
+  Award,
+  TrendingUp,
+  Wallet,
+  LogOut,
+  Globe,
+} from '../lib/icons';
 
 interface AssociationScreenProps {
   cooperative: CooperativeGroup;
   onDistributeDividends: () => void;
   lang: 'fr' | 'mg';
+  onLogout?: () => void;
+  onToggleLanguage?: () => void;
 }
 
-export const AssociationScreen: React.FC<AssociationScreenProps> = ({ cooperative, onDistributeDividends, lang }) => {
+type AssociationView = 'main' | 'members';
+
+export const AssociationScreen: React.FC<AssociationScreenProps> = ({ cooperative, onDistributeDividends, lang, onLogout, onToggleLanguage }) => {
   const t = translations[lang];
   const [selectedStructure, setSelectedStructure] = useState<'family' | 'neighborhood' | 'coop'>('coop');
   const [payoutSuccessToast, setPayoutSuccessToast] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<AssociationView>('main');
 
   const handleTriggerPayout = () => {
     onDistributeDividends();
@@ -24,6 +46,131 @@ export const AssociationScreen: React.FC<AssociationScreenProps> = ({ cooperativ
     );
     setTimeout(() => setPayoutSuccessToast(null), 5000);
   };
+
+  const totalContributed = cooperative.members.reduce((sum, m) => sum + m.contributedKgThisMonth, 0);
+  const totalRevenue = cooperative.members.reduce((sum, m) => sum + m.allocatedRevenueAr, 0);
+  const paidMembers = cooperative.members.filter((m) => m.paymentStatus === 'paid_mvola').length;
+
+  if (currentView === 'members') {
+    return (
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
+        {/* Members Page Header */}
+        <View className="flex-row items-center gap-3">
+          <Pressable onPress={() => setCurrentView('main')} className="p-2 rounded-xl bg-white border border-[#E3DFD2]">
+            <ArrowLeft className="w-5 h-5 text-teal-700" />
+          </Pressable>
+          <View className="flex-1">
+            <Text className="font-black text-lg text-teal-900">
+              {lang === 'fr' ? 'Tous les Membres' : 'Mpikambana Rehetra'}
+            </Text>
+            <Text className="text-xs text-stone-500">
+              {cooperative.totalMembers} {lang === 'fr' ? 'familles associées' : 'fianakaviana miaraka'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Stats Summary */}
+        <View className="bg-teal-800 rounded-2xl p-4">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Award className="w-5 h-5 text-amber-300" />
+            <Text className="font-bold text-white text-sm">
+              {lang === 'fr' ? 'Résumé des Membres' : 'Famintinana ny Mpikambana'}
+            </Text>
+          </View>
+          <View className="flex-row flex-wrap gap-2">
+            <View className="bg-white/10 rounded-xl p-2.5" style={{ width: '48%' }}>
+              <Text className="text-[10px] text-teal-200 uppercase font-semibold">
+                {lang === 'fr' ? 'Total Contribué' : 'Totaly Nantomotra'}
+              </Text>
+              <Text className="text-base font-black text-white mt-0.5">{totalContributed.toLocaleString('fr-FR')} kg</Text>
+            </View>
+            <View className="bg-white/10 rounded-xl p-2.5" style={{ width: '48%' }}>
+              <Text className="text-[10px] text-teal-200 uppercase font-semibold">
+                {lang === 'fr' ? 'Revenue Total' : 'Volabe'}
+              </Text>
+              <Text className="text-base font-black text-amber-300 mt-0.5">{(totalRevenue / 1000000).toFixed(1)}M Ar</Text>
+            </View>
+            <View className="bg-white/10 rounded-xl p-2.5" style={{ width: '48%' }}>
+              <Text className="text-[10px] text-teal-200 uppercase font-semibold">
+                {lang === 'fr' ? 'Payés MVola' : 'Voaloa MVola'}
+              </Text>
+              <Text className="text-base font-black text-emerald-300 mt-0.5">{paidMembers}/{cooperative.members.length}</Text>
+            </View>
+            <View className="bg-white/10 rounded-xl p-2.5" style={{ width: '48%' }}>
+              <Text className="text-[10px] text-teal-200 uppercase font-semibold">
+                {lang === 'fr' ? 'Cultures Moy.' : 'Voly Filalaovana'}
+              </Text>
+              <Text className="text-base font-black text-white mt-0.5">
+                {Math.round(cooperative.members.reduce((s, m) => s + m.cropsCount, 0) / cooperative.members.length)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Members List */}
+        <View className="gap-3">
+          {cooperative.members.map((mem, index) => (
+            <View key={mem.id} className="bg-white rounded-2xl p-4 border border-stone-200/80 gap-3">
+              <View className="flex-row items-start gap-3">
+                <View className="w-12 h-12 rounded-2xl bg-teal-100 items-center justify-center">
+                  <Text className="text-teal-800 font-black text-lg">{mem.name.charAt(0)}</Text>
+                </View>
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-2">
+                    <Text className="font-bold text-stone-900 text-sm flex-1">{mem.name}</Text>
+                    <Text className="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 font-bold">
+                      #{index + 1}
+                    </Text>
+                  </View>
+                  <Text className="text-xs text-stone-500 mt-0.5">{mem.roleInCoop}</Text>
+                  <View className="flex-row items-center gap-1 mt-1">
+                    <MapPin className="w-3 h-3 text-stone-400" />
+                    <Text className="text-[11px] text-stone-500">Fokontany {mem.fokontany}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View className="flex-row items-center gap-2 p-2 bg-stone-50 rounded-xl">
+                <Phone className="w-3.5 h-3.5 text-teal-600" />
+                <Text className="text-xs text-stone-700 font-medium">{mem.phone}</Text>
+              </View>
+
+              <View className="flex-row gap-2">
+                <View className="flex-1 bg-teal-50 rounded-xl p-2.5">
+                  <View className="flex-row items-center gap-1 mb-1">
+                    <Sprout className="w-3.5 h-3.5 text-teal-600" />
+                    <Text className="text-[10px] text-teal-600 font-semibold uppercase">
+                      {lang === 'fr' ? 'Contributions' : 'Nantomotra'}
+                    </Text>
+                  </View>
+                  <Text className="font-black text-teal-900 text-sm">{mem.contributedKgThisMonth} kg</Text>
+                  <Text className="text-[10px] text-stone-500">{mem.cropsCount} {lang === 'fr' ? 'cultures' : 'voly'}</Text>
+                </View>
+
+                <View className="flex-1 bg-emerald-50 rounded-xl p-2.5">
+                  <View className="flex-row items-center gap-1 mb-1">
+                    <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+                    <Text className="text-[10px] text-emerald-600 font-semibold uppercase">
+                      {lang === 'fr' ? 'Revenue' : 'Volany'}
+                    </Text>
+                  </View>
+                  <Text className="font-black text-emerald-900 text-sm">{mem.allocatedRevenueAr.toLocaleString('fr-FR')} Ar</Text>
+                  <View className="flex-row items-center gap-1 mt-1">
+                    <View className={`w-2 h-2 rounded-full ${mem.paymentStatus === 'paid_mvola' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    <Text className={`text-[10px] font-bold ${mem.paymentStatus === 'paid_mvola' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                      {mem.paymentStatus === 'paid_mvola'
+                        ? (lang === 'fr' ? 'MVola Versé' : 'Voaloa MVola')
+                        : (lang === 'fr' ? 'En attente' : 'Miandry')}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <View style={{ gap: 16, paddingBottom: 40 }}>
@@ -41,6 +188,18 @@ export const AssociationScreen: React.FC<AssociationScreenProps> = ({ cooperativ
               </Text>
             </View>
             <Text className="text-xs text-teal-100/85 leading-tight mt-0.5">{t.associationSubtitle}</Text>
+          </View>
+          <View className="flex-col items-center gap-2">
+            {onToggleLanguage && (
+              <Pressable onPress={onToggleLanguage} className="p-2 rounded-lg bg-white/15">
+                <Globe className="w-4 h-4 text-teal-200" />
+              </Pressable>
+            )}
+            {onLogout && (
+              <Pressable onPress={onLogout} className="p-2 rounded-lg bg-red-500/20">
+                <LogOut className="w-4 h-4 text-red-300" />
+              </Pressable>
+            )}
           </View>
         </View>
 
@@ -219,6 +378,17 @@ export const AssociationScreen: React.FC<AssociationScreenProps> = ({ cooperativ
             </View>
           ))}
         </View>
+
+        <Pressable
+          onPress={() => setCurrentView('members')}
+          className="flex-row items-center justify-center gap-2 p-3 rounded-xl bg-teal-100 border border-teal-300"
+        >
+          <Users className="w-4 h-4 text-teal-700" />
+          <Text className="font-bold text-teal-800 text-xs">
+            {lang === 'fr' ? 'Voir tous les membres en détail' : 'Hijery ny mpikambana rehetra'}
+          </Text>
+          <ChevronRight className="w-4 h-4 text-teal-700" />
+        </Pressable>
       </View>
     </View>
   );

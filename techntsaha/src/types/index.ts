@@ -1,7 +1,7 @@
 export type Language = 'fr' | 'mg';
 
 // User Roles defined in MpambolyMivoatry Presentation
-export type UserRole = 'all' | 'agriculteur' | 'vendeur' | 'commercant' | 'association';
+export type UserRole = 'all' | 'agriculteur' | 'vendeur' | 'commercant' | 'acheteur' | 'association' | 'administrateur';
 
 export type ScreenType = 
   | 'home' 
@@ -13,7 +13,11 @@ export type ScreenType =
   | 'field_inspection'
   | 'seller_shop'
   | 'buyer_hub'
-  | 'association';
+  | 'association'
+  | 'family_overview'
+  | 'associations'
+  | 'admin'
+  | 'logout';
 
 export type CropStage = 'semis' | 'croissance' | 'floraison' | 'maturation' | 'recolte';
 
@@ -314,5 +318,73 @@ export interface FarmerProfile {
   shopName?: string;
   mvolaNumber?: string;
   orangeMoneyNumber?: string;
+  familyId?: string;
+}
+
+// Family types
+export interface Family {
+  id: string;
+  name: string;
+  headUserId?: string | null;
+  createdAt?: string;
+}
+
+export interface FamilyMember {
+  id: string;
+  familyId: string;
+  userId: string;
+  userName: string;
+  roleInFamily: string;
+  joinedAt?: string;
+}
+
+export interface FamilyToken {
+  id: string;
+  token: string;
+  familyId: string;
+  createdBy: string;
+  createdAt: string;
+  maxUses: number;
+  usedCount: number;
+  isActive: boolean;
+}
+
+export type ActivityActionType = 'IRRIGATION' | 'INSPECTION' | 'SALE' | 'CROP_CREATE' | 'CROP_UPDATE' | 'HARVEST' | 'LISTING_CREATE' | 'SENSOR_UPDATE';
+
+export interface ActivityTrace {
+  id: string;
+  familyId: string;
+  userId: string;
+  userName: string;
+  actionType: ActivityActionType;
+  entityType: string;
+  entityId: string;
+  details?: Record<string, any> | null;
+  timestamp: string;
+}
+
+// Association types
+export type AssociationMemberStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface Association {
+  id: string;
+  name: string;
+  description?: string | null;
+  rules?: string | null;
+  creatorId: string;
+  createdAt: string;
+}
+
+export interface AssociationMember {
+  id: string;
+  associationId: string;
+  familyId: string;
+  userId: string;
+  status: AssociationMemberStatus;
+  joinedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+  requestedAt?: string;
+  association?: Association;
 }
 

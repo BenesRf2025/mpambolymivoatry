@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, SafeAreaView, StatusBar as RNStatusBar } from 'react-native';
+import { View, Text, ScrollView, StatusBar as RNStatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
   ScreenType,
@@ -41,6 +42,7 @@ import { SellerShopScreen } from './src/components/SellerShopScreen';
 import { BuyerHubScreen } from './src/components/BuyerHubScreen';
 import { AssociationScreen } from './src/components/AssociationScreen';
 import { LoginScreen } from './src/components/LoginScreen';
+import { SignupScreen } from './src/components/SignupScreen';
 import { NavigationBottom } from './src/components/NavigationBottom';
 import { CropDetailModal } from './src/components/CropDetailModal';
 import { NewCropModal } from './src/components/NewCropModal';
@@ -72,6 +74,7 @@ export default function App() {
   const [chatThreads, setChatThreads] = useState<ChatThread[]>(initialChatThreads);
   const [farmerProfile, setFarmerProfile] = useState<FarmerProfile>(initialFarmerProfile);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
   // UI states
   const [selectedCropDetail, setSelectedCropDetail] = useState<Crop | null>(null);
@@ -94,6 +97,7 @@ export default function App() {
         savedOrders,
         savedChats,
         savedAuth,
+        savedProfile,
       ] = await Promise.all([
         loadJSON('mpamboly_crops', initialCrops),
         loadJSON('mpamboly_market', initialMarketItems),
@@ -104,6 +108,7 @@ export default function App() {
         loadJSON('mpamboly_orders', initialInAppOrders),
         loadJSON('mpamboly_chats', initialChatThreads),
         loadString('mpamboly_is_authenticated'),
+        loadJSON<FarmerProfile>('mpamboly_profile', initialFarmerProfile),
       ]);
       setCrops(savedCrops);
       setMarketItems(savedMarket);
@@ -114,6 +119,7 @@ export default function App() {
       setOrders(savedOrders);
       setChatThreads(savedChats);
       setIsAuthenticated(savedAuth === 'true');
+      if (savedProfile) setFarmerProfile(savedProfile);
       setIsReady(true);
     })();
   }, []);
@@ -140,6 +146,10 @@ export default function App() {
   useEffect(() => {
     if (isReady) saveJSON('mpamboly_chats', chatThreads);
   }, [chatThreads, isReady]);
+
+  useEffect(() => {
+    if (isReady) saveJSON('mpamboly_profile', farmerProfile);
+  }, [farmerProfile, isReady]);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -181,6 +191,15 @@ export default function App() {
         : `Connecté avec succès : ${customProfile?.name || role}`
     );
   };
+
+  const handleSignup = (role: UserRole, profile: FarmerProfile, destinationScreen: ScreenType) => {
+    saveJSON('mpamboly_profile', profile);
+    handleLogin(role, profile, destinationScreen);
+    showToast(language === 'mg' ? 'Voatahiry soa aman-tsara ny kaonty !' : 'Compte créé avec succès !');
+  };
+
+  const handleSwitchToSignup = () => setAuthMode('signup');
+  const handleSwitchToLogin = () => setAuthMode('login');
 
   const handleLogout = () => {
     setIsAuthenticated(false);
@@ -325,7 +344,11 @@ export default function App() {
       <StatusBar style="dark" />
 
       {!isAuthenticated ? (
-        <LoginScreen language={language} onToggleLanguage={handleToggleLanguage} onLogin={handleLogin} />
+        authMode === 'login' ? (
+          <LoginScreen language={language} onToggleLanguage={handleToggleLanguage} onLogin={handleLogin} onSwitchToSignup={handleSwitchToSignup} />
+        ) : (
+          <SignupScreen language={language} onToggleLanguage={handleToggleLanguage} onSignup={handleSignup} onSwitchToLogin={handleSwitchToLogin} />
+        )
       ) : (
         <View className="flex-1">
           <View className="flex-1">

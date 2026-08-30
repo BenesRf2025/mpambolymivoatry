@@ -11,6 +11,8 @@ import {
   Store,
   Users,
   Compass,
+  Shield,
+  Users2,
 } from '../lib/icons';
 import { ScreenType, Language, UserRole } from '../types';
 import { translations } from '../data/translations';
@@ -46,6 +48,11 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             icon: <Home className="w-5 h-5" />,
           },
           {
+            id: 'family_overview',
+            label: language === 'fr' ? 'Famille' : 'Fianakaviana',
+            icon: <Users2 className="w-5 h-5" />,
+          },
+          {
             id: 'smart_irrigation',
             label: language === 'fr' ? 'IoT & Eau' : 'IoT & Rano',
             icon: <Cpu className="w-5 h-5" />,
@@ -57,15 +64,9 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             icon: <ClipboardCheck className="w-5 h-5" />,
           },
           {
-            id: 'diagnostic',
-            label: language === 'mg' ? 'Fahasalamana' : 'Docteur IA',
-            icon: <Stethoscope className="w-5 h-5" />,
-            badge: 'IA',
-          },
-          {
-            id: 'management',
-            label: t.management,
-            icon: <Wallet className="w-5 h-5" />,
+            id: 'associations',
+            label: language === 'fr' ? 'Associations' : 'Fikambanana',
+            icon: <Users className="w-5 h-5" />,
           },
         ];
 
@@ -75,6 +76,11 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             id: 'home',
             label: t.home,
             icon: <Home className="w-5 h-5" />,
+          },
+          {
+            id: 'family_overview',
+            label: language === 'fr' ? 'Famille' : 'Fianakaviana',
+            icon: <Users2 className="w-5 h-5" />,
           },
           {
             id: 'seller_shop',
@@ -88,23 +94,24 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             icon: <ShoppingBag className="w-5 h-5" />,
           },
           {
-            id: 'association',
-            label: language === 'fr' ? 'Coopérative' : 'Koperativa',
+            id: 'associations',
+            label: language === 'fr' ? 'Associations' : 'Fikambanana',
             icon: <Users className="w-5 h-5" />,
-          },
-          {
-            id: 'management',
-            label: t.management,
-            icon: <Wallet className="w-5 h-5" />,
           },
         ];
 
       case 'commercant':
+      case 'acheteur':
         return [
           {
             id: 'home',
             label: t.home,
             icon: <Home className="w-5 h-5" />,
+          },
+          {
+            id: 'family_overview',
+            label: language === 'fr' ? 'Famille' : 'Fianakaviana',
+            icon: <Users2 className="w-5 h-5" />,
           },
           {
             id: 'buyer_hub',
@@ -118,14 +125,9 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             icon: <Compass className="w-5 h-5" />,
           },
           {
-            id: 'association',
-            label: language === 'fr' ? 'Coopérative' : 'Koperativa',
+            id: 'associations',
+            label: language === 'fr' ? 'Associations' : 'Fikambanana',
             icon: <Users className="w-5 h-5" />,
-          },
-          {
-            id: 'management',
-            label: t.management,
-            icon: <Wallet className="w-5 h-5" />,
           },
         ];
 
@@ -135,6 +137,11 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             id: 'home',
             label: t.home,
             icon: <Home className="w-5 h-5" />,
+          },
+          {
+            id: 'family_overview',
+            label: language === 'fr' ? 'Famille' : 'Fianakaviana',
+            icon: <Users2 className="w-5 h-5" />,
           },
           {
             id: 'association',
@@ -148,14 +155,38 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             icon: <Store className="w-5 h-5" />,
           },
           {
-            id: 'smart_irrigation',
-            label: language === 'fr' ? 'Capteurs' : 'Fandrefesana',
-            icon: <Cpu className="w-5 h-5" />,
+            id: 'associations',
+            label: language === 'fr' ? 'Associations' : 'Fikambanana',
+            icon: <Users className="w-5 h-5" />,
+          },
+        ];
+
+      case 'administrateur':
+        return [
+          {
+            id: 'admin',
+            label: language === 'fr' ? 'Dashboard' : 'Fitantanam-pitantana',
+            icon: <Shield className="w-5 h-5" />,
           },
           {
-            id: 'management',
-            label: t.management,
-            icon: <Wallet className="w-5 h-5" />,
+            id: 'home',
+            label: t.home,
+            icon: <Home className="w-5 h-5" />,
+          },
+          {
+            id: 'family_overview',
+            label: language === 'fr' ? 'Familles' : 'Fianakaviana',
+            icon: <Users2 className="w-5 h-5" />,
+          },
+          {
+            id: 'associations',
+            label: language === 'fr' ? 'Associations' : 'Fikambanana',
+            icon: <Users className="w-5 h-5" />,
+          },
+          {
+            id: 'market',
+            label: t.market,
+            icon: <ShoppingBag className="w-5 h-5" />,
           },
         ];
 
@@ -166,6 +197,11 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             id: 'home',
             label: t.home,
             icon: <Home className="w-5 h-5" />,
+          },
+          {
+            id: 'family_overview',
+            label: language === 'fr' ? 'Famille' : 'Fianakaviana',
+            icon: <Users2 className="w-5 h-5" />,
           },
           {
             id: 'market',
@@ -185,13 +221,8 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             badge: 'IA',
           },
           {
-            id: 'seller_shop',
-            label: language === 'fr' ? 'Boutique' : 'Fivarotana',
-            icon: <Store className="w-5 h-5" />,
-          },
-          {
-            id: 'association',
-            label: language === 'fr' ? 'Coopérative' : 'Koperativa',
+            id: 'associations',
+            label: language === 'fr' ? 'Associations' : 'Fikambanana',
             icon: <Users className="w-5 h-5" />,
           },
         ];

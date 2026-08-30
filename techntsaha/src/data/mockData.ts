@@ -95,6 +95,32 @@ export const demoProfiles: Record<UserRole, FarmerProfile> = {
     mvolaNumber: '034 12 345 67',
     orangeMoneyNumber: '032 55 987 12',
   },
+  acheteur: {
+    name: 'Rajaonarison Hanta (Acheteur Pro)',
+    phone: '033 88 555 44',
+    location: 'Anosibe, Antananarivo',
+    region: 'Analamanga',
+    cooperative: 'Réseau Acheteurs Professionnels',
+    totalLandArea: 'Logistique & Entrepôt 200m²',
+    memberSince: '2023',
+    activeRole: 'acheteur',
+    shopName: 'Hanta Sourcing Madagascar',
+    mvolaNumber: '034 88 555 44',
+    orangeMoneyNumber: '032 88 555 44',
+  },
+  administrateur: {
+    name: 'Admin Mpamboly',
+    phone: '034 00 000 00',
+    location: 'Antananarivo, Analamanga',
+    region: 'Analamanga',
+    cooperative: 'Plateforme Nationale',
+    totalLandArea: 'Gestion Nationale',
+    memberSince: '2024',
+    activeRole: 'administrateur',
+    shopName: 'Administration Centrale',
+    mvolaNumber: '034 00 000 00',
+    orangeMoneyNumber: '032 00 000 00',
+  },
 };
 
 export const regionsList = [

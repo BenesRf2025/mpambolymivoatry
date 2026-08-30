@@ -55,6 +55,13 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
       bgActive: 'bg-stone-800',
     },
     {
+      id: 'acheteur',
+      label: lang === 'fr' ? 'Acheteur·euse' : 'Mpividy',
+      sublabel: lang === 'fr' ? 'Sourcing & Gros' : 'Famatsiana & Vokatra Be',
+      icon: <ShoppingBag className="w-4 h-4" />,
+      bgActive: 'bg-indigo-800',
+    },
+    {
       id: 'association',
       label: lang === 'fr' ? 'Association & Coop' : 'Fikambanana & Koperativa',
       sublabel: lang === 'fr' ? 'Force du Collectif' : 'Tahiry & Fizarana 95/5',

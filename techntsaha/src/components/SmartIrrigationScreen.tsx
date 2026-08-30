@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { IoTSensorNode } from '../types';
 import { translations } from '../data/translations';
 import { Droplets, Sun, Thermometer, CloudRain, Radio, Power, CheckCircle2, MessageSquare, Sparkles, TrendingUp, Send, Zap } from '../lib/icons';
+import { useSensors, usePostTelemetry } from '../services/reactQueryHooks';
 
 interface SmartIrrigationScreenProps {
   sensors: IoTSensorNode[];
@@ -10,19 +11,24 @@ interface SmartIrrigationScreenProps {
   lang: 'fr' | 'mg';
 }
 
-export const SmartIrrigationScreen: React.FC<SmartIrrigationScreenProps> = ({ sensors, onUpdateSensor, lang }) => {
+export const SmartIrrigationScreen: React.FC<SmartIrrigationScreenProps> = ({ sensors: propSensors, onUpdateSensor, lang }) => {
   const t = translations[lang];
-  const [selectedSensorId, setSelectedSensorId] = useState<string>(sensors[0]?.id || 'sensor-1');
+  const [selectedSensorId, setSelectedSensorId] = useState<string>(propSensors[0]?.id || 'sensor-1');
   const [isSimulatingAction, setIsSimulatingAction] = useState<string | null>(null);
   const [simulatedSmsToast, setSimulatedSmsToast] = useState<string | null>(null);
 
+  const sensorsQuery = useSensors();
+  const sensors: IoTSensorNode[] = (sensorsQuery.data && sensorsQuery.data.length > 0) ? sensorsQuery.data as IoTSensorNode[] : propSensors;
+
   const currentSensor = sensors.find((s) => s.id === selectedSensorId) || sensors[0];
 
-  const handleToggleValve = (mode: 'open' | 'closed' | 'auto') => {
+  const telemetryMutation = usePostTelemetry();
+
+  const handleToggleValve = async (mode: 'open' | 'closed' | 'auto') => {
     if (!currentSensor) return;
     setIsSimulatingAction(mode);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const updated: IoTSensorNode = {
         ...currentSensor,
         valveStatus: mode,
@@ -37,7 +43,6 @@ export const SmartIrrigationScreen: React.FC<SmartIrrigationScreenProps> = ({ se
           ? `[SMS Mpamboly IoT] ${currentSensor.plotName}: Vanne passée en mode ${mode.toUpperCase()}. Humidité: ${currentSensor.soilMoisture}%.`
           : `[SMS Mpamboly IoT] ${currentSensor.plotName}: Novana ho ${mode.toUpperCase()} ny vanne. Hamandoana: ${currentSensor.soilMoisture}%.`;
       setSimulatedSmsToast(smsMsg);
-
       setTimeout(() => setSimulatedSmsToast(null), 5000);
     }, 600);
   };
@@ -46,7 +51,7 @@ export const SmartIrrigationScreen: React.FC<SmartIrrigationScreenProps> = ({ se
     if (!currentSensor) return;
     setIsSimulatingAction('pulse');
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const newMoisture = Math.min(88, currentSensor.soilMoisture + 15);
       const updated: IoTSensorNode = {
         ...currentSensor,

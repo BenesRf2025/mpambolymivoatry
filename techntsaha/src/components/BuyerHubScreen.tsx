@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Image, Modal } from 'react-native';
 import { MarketItem, InAppOrder } from '../types';
 import { translations } from '../data/translations';
-import { ShoppingBag, Store, Utensils, Globe2, Users, Search, CheckCircle2, ShieldCheck, MessageSquare, MapPin, X } from '../lib/icons';
+import { ShoppingBag, Store, Utensils, Globe2, Users, Search, CheckCircle2, ShieldCheck, MessageSquare, MapPin, X, TrendingUp, Package } from '../lib/icons';
+import { useListings, useCreateListing } from '../services/reactQueryHooks';
 
 interface BuyerHubScreenProps {
   marketItems: MarketItem[];
@@ -11,7 +12,7 @@ interface BuyerHubScreenProps {
   lang: 'fr' | 'mg';
 }
 
-export const BuyerHubScreen: React.FC<BuyerHubScreenProps> = ({ marketItems, onPlaceOrder, onInitiateChat, lang }) => {
+export const BuyerHubScreen: React.FC<BuyerHubScreenProps> = ({ marketItems: propMarketItems, onPlaceOrder, onInitiateChat, lang }) => {
   const t = translations[lang];
   const [selectedSegment, setSelectedSegment] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -23,6 +24,52 @@ export const BuyerHubScreen: React.FC<BuyerHubScreenProps> = ({ marketItems, onP
   const [negotiationMessage, setNegotiationMessage] = useState<string>('');
   const [proposedPrice, setProposedPrice] = useState<number>(0);
   const [orderSuccessToast, setOrderSuccessToast] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'products' | 'sellers'>('products');
+
+  const listingsQuery = useListings();
+  const createListingMutation = useCreateListing();
+
+  const marketItems = (listingsQuery.data && listingsQuery.data.length > 0)
+    ? listingsQuery.data.map((listing): MarketItem => ({
+        id: listing.id,
+        title: listing.name,
+        malagasyTitle: listing.name,
+        category: 'recoltes',
+        price: listing.price || 0,
+        unit: listing.unit || 'kg',
+        location: 'Madagascar',
+        region: 'Madagascar',
+        sellerName: 'Vendeur',
+        sellerType: (listing.sellerType as 'producteur' | 'association' | 'commercant') || 'producteur',
+        sellerPhone: '',
+        verifiedSeller: true,
+        inStock: true,
+        stockAmount: listing.quantity?.toString() || '',
+        stockKg: listing.quantity || undefined,
+        imageUrl: listing.images?.[0] || 'https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=500&auto=format&fit=crop&q=80',
+        datePosted: listing.createdAt || "À l'instant",
+        description: listing.description || '',
+        malagasyDescription: listing.description || '',
+        targetBuyers: [],
+        bulkDiscount: undefined,
+      }))
+    : propMarketItems;
+
+  const sellersMap = new Map<string, MarketItem[]>();
+  marketItems.forEach((item) => {
+    const key = item.sellerName;
+    if (!sellersMap.has(key)) sellersMap.set(key, []);
+    sellersMap.get(key)!.push(item);
+  });
+  const sellers = Array.from(sellersMap.entries()).map(([name, items]) => ({
+    name,
+    items,
+    count: items.length,
+    minPrice: Math.min(...items.map((i) => i.price)),
+    maxPrice: Math.max(...items.map((i) => i.price)),
+    totalStock: items.reduce((sum, i) => sum + (i.stockKg || 0), 0),
+    sellerType: items[0].sellerType,
+  }));
 
   const segments = [
     { id: 'all', label: lang === 'fr' ? 'Tous les Acheteurs' : 'Mpividy Rehetra', icon: Users },
@@ -155,10 +202,33 @@ export const BuyerHubScreen: React.FC<BuyerHubScreenProps> = ({ marketItems, onP
         </View>
       </ScrollView>
 
+      {/* View Mode Toggle */}
+      <View className="flex-row gap-2 bg-white p-1 rounded-xl border border-stone-200">
+        <Pressable
+          onPress={() => setViewMode('products')}
+          className={`flex-1 flex-row items-center justify-center gap-1.5 py-2 rounded-lg ${viewMode === 'products' ? 'bg-stone-900' : ''}`}
+        >
+          <Package className={`w-4 h-4 ${viewMode === 'products' ? 'text-white' : 'text-stone-700'}`} />
+          <Text className={`text-xs font-bold ${viewMode === 'products' ? 'text-white' : 'text-stone-700'}`}>
+            {lang === 'fr' ? 'Par Produit' : 'Avy amin\'ny Vokatra'}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setViewMode('sellers')}
+          className={`flex-1 flex-row items-center justify-center gap-1.5 py-2 rounded-lg ${viewMode === 'sellers' ? 'bg-stone-900' : ''}`}
+        >
+          <Store className={`w-4 h-4 ${viewMode === 'sellers' ? 'text-white' : 'text-stone-700'}`} />
+          <Text className={`text-xs font-bold ${viewMode === 'sellers' ? 'text-white' : 'text-stone-700'}`}>
+            {lang === 'fr' ? 'Par Vendeur' : 'Avy amin\'ny Mpivarotra'}
+          </Text>
+        </Pressable>
+      </View>
+
       {/* Sourcing Catalog */}
-      <View className="flex-row flex-wrap gap-3">
-        {filteredItems.map((item) => (
-          <View key={item.id} className="bg-[#FAF8F5] rounded-2xl p-4 border border-[#E3DFD2] gap-3 justify-between" style={{ width: '100%' }}>
+      {viewMode === 'products' ? (
+        <View className="flex-row flex-wrap gap-3">
+          {filteredItems.map((item) => (
+            <View key={item.id} className="bg-[#FAF8F5] rounded-2xl p-4 border border-[#E3DFD2] gap-3 justify-between" style={{ width: '100%' }}>
             <View>
               <View className="relative mb-2.5">
                 <Image source={{ uri: item.imageUrl }} style={{ width: '100%', height: 144, borderRadius: 12 }} />
@@ -222,6 +292,57 @@ export const BuyerHubScreen: React.FC<BuyerHubScreenProps> = ({ marketItems, onP
           </View>
         ))}
       </View>
+      ) : (
+        <View className="gap-3">
+          {sellers.map((seller) => (
+            <View key={seller.name} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+              <View className="p-4 bg-stone-900 flex-row items-center justify-between">
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-2">
+                    <Store className="w-4 h-4 text-amber-300" />
+                    <Text className="font-bold text-sm text-white">{seller.name}</Text>
+                  </View>
+                  <View className="flex-row items-center gap-3 mt-1">
+                    <Text className="text-[10px] text-stone-300">
+                      {lang === 'fr' ? `${seller.count} produit(s)` : `Vokatra ${seller.count}`}
+                    </Text>
+                    <Text className="text-[10px] text-stone-300">
+                      {lang === 'fr' ? `Stock total: ${seller.totalStock.toLocaleString('fr-FR')} kg` : `Fahatahirana: ${seller.totalStock.toLocaleString('fr-FR')} kg`}
+                    </Text>
+                    <Text className="text-[10px] text-amber-200 font-bold">
+                      {seller.minPrice.toLocaleString('fr-FR')} - {seller.maxPrice.toLocaleString('fr-FR')} Ar
+                    </Text>
+                  </View>
+                </View>
+                <View className="bg-white/15 px-2.5 py-1 rounded-full">
+                  <Text className="text-[10px] font-bold text-white uppercase">{seller.sellerType}</Text>
+                </View>
+              </View>
+              <View className="p-3 gap-2">
+                {seller.items.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => {
+                      setOrderingItem(item);
+                      setOrderQuantity(item.bulkDiscount ? item.bulkDiscount.minQuantity : 20);
+                    }}
+                    className="flex-row items-center justify-between bg-[#FAF8F5] p-3 rounded-xl border border-stone-100"
+                  >
+                    <View className="flex-1">
+                      <Text className="text-xs font-bold text-stone-900">{lang === 'fr' ? item.title : item.malagasyTitle || item.title}</Text>
+                      <Text className="text-[10px] text-stone-500">{item.stockAmount} {item.unit}</Text>
+                    </View>
+                    <View className="items-end">
+                      <Text className="text-xs font-black text-stone-900">{item.price.toLocaleString('fr-FR')} Ar</Text>
+                      <Text className="text-[9px] text-stone-500">/ {item.unit}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* ORDER MODAL */}
       <Modal visible={!!orderingItem} transparent animationType="fade" onRequestClose={() => setOrderingItem(null)}>

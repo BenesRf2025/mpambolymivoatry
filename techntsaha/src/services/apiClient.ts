@@ -1,93 +1,219 @@
 import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import {
   AuthResponse,
-  IoTSensorNode,
-  Telemetry,
-  TelemetryAck,
-  MarketItem,
-  NewListing,
+  User,
+  Parcel,
+  Crop,
+  Harvest,
   Inspection,
+  Sensor,
+  Telemetry,
+  Listing,
   SyncBatch,
   SyncResult,
-  User,
+  Family,
+  FamilyMember,
+  ActivityTrace,
+  Association,
+  AssociationMember,
 } from './apiTypes';
 
-const DEFAULT_BASE = 'https://api.example.com';
+const DEFAULT_BASE = 'http://localhost:3000';
 
-class APIClient {
-  private client: AxiosInstance;
-  private token: string | null = null;
+const api = axios.create({ baseURL: DEFAULT_BASE });
 
-  constructor(baseURL = DEFAULT_BASE) {
-    this.client = axios.create({
-      baseURL,
-      timeout: 30_000,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    this.client.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
-      if (this.token) {
-        const prev = (cfg.headers as Record<string, unknown>) || {};
-        cfg.headers = { ...prev, Authorization: `Bearer ${this.token}` } as any;
-      }
-      return cfg;
-    });
+api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
+  const token = (cfg as any)._authToken;
+  if (token) {
+    const prev = (cfg.headers as Record<string, unknown>) || {};
+    cfg.headers = { ...prev, Authorization: `Bearer ${token}` } as any;
   }
+  return cfg;
+});
 
-  setBaseURL(url: string) {
-    this.client.defaults.baseURL = url;
-  }
+export const setAuthToken = (token: string | null) => {
+  (api as any)._authToken = token;
+};
 
-  setAuthToken(token: string | null) {
-    this.token = token;
-  }
+export const setBaseURL = (url: string) => {
+  (api as any).defaults.baseURL = url;
+};
 
-  // Auth
-  async login(phone: string, password: string): Promise<AuthResponse> {
-    const { data } = await this.client.post<AuthResponse>('/api/auth/login', { phone, password });
-    return data;
-  }
+// Auth
+export const login = async (phone: string, password: string): Promise<AuthResponse> => {
+  const { data } = await api.post<AuthResponse>('/api/auth/login', { phone, password });
+  return data;
+};
 
-  // User
-  async getMe(): Promise<User> {
-    const { data } = await this.client.get<User>('/api/me');
-    return data;
-  }
+export const register = async (payload: { fullName: string; phoneNumber: string; password: string; roles: string[] }): Promise<AuthResponse> => {
+  const { data } = await api.post<AuthResponse>('/api/auth/register', payload);
+  return data;
+};
 
-  // Sensors
-  async getSensors(): Promise<IoTSensorNode[]> {
-    const { data } = await this.client.get<IoTSensorNode[]>('/api/sensors');
-    return data;
-  }
+export const registerWithFamilyToken = async (payload: { fullName: string; phoneNumber: string; password: string; roles: string[]; familyToken: string }): Promise<AuthResponse> => {
+  const { data } = await api.post<AuthResponse>('/api/family/register', payload);
+  return data;
+};
 
-  async postTelemetry(sensorId: string, payload: Telemetry): Promise<TelemetryAck> {
-    const { data } = await this.client.post<TelemetryAck>(`/api/sensors/${sensorId}/telemetry`, payload);
-    return data;
-  }
+export const getMe = async (): Promise<User> => {
+  const { data } = await api.get<User>('/api/auth/me');
+  return data;
+};
 
-  // Listings
-  async getListings(): Promise<MarketItem[]> {
-    const { data } = await this.client.get<MarketItem[]>('/api/listings');
-    return data;
-  }
+// Parcels
+export const getParcels = async (): Promise<Parcel[]> => {
+  const { data } = await api.get<Parcel[]>('/api/parcels');
+  return data;
+};
 
-  async createListing(payload: NewListing): Promise<MarketItem> {
-    const { data } = await this.client.post<MarketItem>('/api/listings', payload);
-    return data;
-  }
+export const getParcel = async (id: string): Promise<Parcel> => {
+  const { data } = await api.get<Parcel>(`/api/parcels/${id}`);
+  return data;
+};
 
-  // Inspections
-  async createInspection(payload: Inspection): Promise<Inspection> {
-    const { data } = await this.client.post<Inspection>('/api/inspections', payload);
-    return data;
-  }
+export const createParcel = async (payload: Omit<Parcel, 'id' | 'createdAt'>): Promise<Parcel> => {
+  const { data } = await api.post<Parcel>('/api/parcels', payload);
+  return data;
+};
 
-  // Sync batch
-  async syncBatch(payload: SyncBatch): Promise<SyncResult> {
-    const { data } = await this.client.post<SyncResult>('/api/sync/batch', payload);
-    return data;
-  }
-}
+// Crops
+export const getCrops = async (parcelId?: string): Promise<Crop[]> => {
+  const { data } = await api.get<Crop[]>('/api/crops', { params: { parcelId } });
+  return data;
+};
 
-export const api = new APIClient();
+export const getCrop = async (id: string): Promise<Crop> => {
+  const { data } = await api.get<Crop>(`/api/crops/${id}`);
+  return data;
+};
+
+export const createCrop = async (payload: Omit<Crop, 'id' | 'createdAt'>): Promise<Crop> => {
+  const { data } = await api.post<Crop>('/api/crops', payload);
+  return data;
+};
+
+// Harvests
+export const getHarvests = async (): Promise<Harvest[]> => {
+  const { data } = await api.get<Harvest[]>('/api/harvests/available');
+  return data;
+};
+
+export const createHarvest = async (payload: Omit<Harvest, 'id' | 'createdAt'>): Promise<Harvest> => {
+  const { data } = await api.post<Harvest>('/api/harvests', payload);
+  return data;
+};
+
+// Inspections
+export const getInspections = async (parcelId?: string): Promise<Inspection[]> => {
+  const { data } = await api.get<Inspection[]>('/api/inspections', { params: { parcelId } });
+  return data;
+};
+
+export const createInspection = async (payload: Omit<Inspection, 'id' | 'createdAt'>): Promise<Inspection> => {
+  const { data } = await api.post<Inspection>('/api/inspections', payload);
+  return data;
+};
+
+export const completeInspection = async (id: string, payload: { observation?: string }): Promise<Inspection> => {
+  const { data } = await api.patch<Inspection>(`/api/inspections/${id}/complete`, payload);
+  return data;
+};
+
+export const getAdvice = async (): Promise<{ advice: string }> => {
+  const { data } = await api.get<{ advice: string }>('/api/inspections/advice');
+  return data;
+};
+
+// Sensors
+export const getSensors = async (): Promise<Sensor[]> => {
+  const { data } = await api.get<Sensor[]>('/api/sensors');
+  return data;
+};
+
+export const postTelemetry = async (sensorId: string, payload: Telemetry): Promise<{ id: string; receivedAt: string }> => {
+  const { data } = await api.post<{ id: string; receivedAt: string }>(`/api/sensors/${sensorId}/telemetry`, payload);
+  return data;
+};
+
+// Listings
+export const getListings = async (): Promise<Listing[]> => {
+  const { data } = await api.get<Listing[]>('/api/listings');
+  return data;
+};
+
+export const createListing = async (payload: Omit<Listing, 'id' | 'createdAt'>): Promise<Listing> => {
+  const { data } = await api.post<Listing>('/api/listings', payload);
+  return data;
+};
+
+// Sync batch
+export const syncBatch = async (payload: SyncBatch): Promise<SyncResult> => {
+  const { data } = await api.post<SyncResult>('/api/sync/batch', payload);
+  return data;
+};
+
+export const getAuthToken = (): string | null => (api as any)._authToken || null;
+
+// Family
+export const createFamily = async (payload: { name: string; headUserId?: string }, token: string): Promise<Family> => {
+  const { data } = await api.post<Family>('/api/family/create', payload, { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const generateFamilyToken = async (familyId: string, token: string, maxUses?: number): Promise<{ token: string }> => {
+  const { data } = await api.post<{ token: string }>('/api/family/token/generate', { familyId, maxUses }, { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const getFamilyMembers = async (token: string): Promise<FamilyMember[]> => {
+  const { data } = await api.get<FamilyMember[]>('/api/family/members', { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const getFamilyActivities = async (token: string): Promise<ActivityTrace[]> => {
+  const { data } = await api.get<ActivityTrace[]>('/api/family/activities', { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const getMyFamily = async (token: string): Promise<Family | null> => {
+  const { data } = await api.get<Family | null>('/api/family/my', { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+// Associations
+export const createAssociation = async (payload: { name: string; description?: string; rules?: string }, token: string): Promise<Association> => {
+  const { data } = await api.post<Association>('/api/association/create', payload, { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const getAllAssociations = async (): Promise<Association[]> => {
+  const { data } = await api.get<Association[]>('/api/association/all');
+  return data;
+};
+
+export const getMyAssociations = async (token: string): Promise<Association[]> => {
+  const { data } = await api.get<Association[]>('/api/association/my', { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const getAssociationById = async (id: string): Promise<Association> => {
+  const { data } = await api.get<Association>(`/api/association/${id}`);
+  return data;
+};
+
+export const joinAssociation = async (associationId: string, token: string): Promise<AssociationMember> => {
+  const { data } = await api.post<AssociationMember>('/api/association/join', { associationId }, { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const approveMember = async (associationMemberId: string, approved: boolean, token: string, rejectionReason?: string): Promise<AssociationMember> => {
+  const { data } = await api.patch<AssociationMember>('/api/association/member/approve', { associationMemberId, approved, rejectionReason }, { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
+export const getPendingRequests = async (associationId: string, token: string): Promise<AssociationMember[]> => {
+  const { data } = await api.get<AssociationMember[]>(`/api/association/${associationId}/pending`, { headers: { Authorization: `Bearer ${token}` } });
+  return data;
+};
+
 export default api;

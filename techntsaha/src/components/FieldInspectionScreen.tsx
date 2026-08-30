@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView, TextInput, Image } from 'react-nativ
 import { FieldInspectionRound } from '../types';
 import { translations } from '../data/translations';
 import { ClipboardCheck, Camera, Mic, MicOff, CheckCircle2, Play, Sparkles, Calendar, User, Share2, Plus } from '../lib/icons';
+import { useInspections, useCreateInspection } from '../services/reactQueryHooks';
 
 interface FieldInspectionScreenProps {
   inspections: FieldInspectionRound[];
@@ -51,7 +52,7 @@ const samplePhotos = [
   'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&auto=format&fit=crop&q=80',
 ];
 
-export const FieldInspectionScreen: React.FC<FieldInspectionScreenProps> = ({ inspections, onAddInspection, lang }) => {
+export const FieldInspectionScreen: React.FC<FieldInspectionScreenProps> = ({ inspections: propInspections, onAddInspection, lang }) => {
   const t = translations[lang];
   const stations = stationsData(lang);
   const [isStartingNewRound, setIsStartingNewRound] = useState(false);
@@ -62,6 +63,28 @@ export const FieldInspectionScreen: React.FC<FieldInspectionScreenProps> = ({ in
   const [notesText, setNotesText] = useState('');
   const [selectedPlot] = useState('Tanim-bary Atsimo (Parcelle 1 - Riz SRI)');
   const [syncToast, setSyncToast] = useState<string | null>(null);
+
+  const inspectionsQuery = useInspections();
+  const inspections = (inspectionsQuery.data && inspectionsQuery.data.length > 0)
+    ? inspectionsQuery.data.map((insp) => ({
+        id: insp.id,
+        plotName: 'Parcelle',
+        inspectorName: 'Inspecteur',
+        date: insp.createdAt ? new Date(insp.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        status: 'completed',
+        overallHealthScore: 80,
+        stationsChecked: 2,
+        totalStations: 4,
+        photos: [],
+        audioNotesCount: 0,
+        observationsFr: [insp.observation || 'Inspection effectuée'],
+        observationsMg: [insp.observation || 'Inspection effectuée'],
+        actionRequired: false,
+        syncedToCoop: true,
+      }))
+    : propInspections;
+
+  const createInspectionMutation = useCreateInspection();
 
   const handleToggleStation = (index: number) => {
     const updated = [...stationChecks];
@@ -90,7 +113,7 @@ export const FieldInspectionScreen: React.FC<FieldInspectionScreenProps> = ({ in
     }
   };
 
-  const handleFinishRound = () => {
+  const handleFinishRound = async () => {
     const completedCount = stationChecks.filter(Boolean).length;
     const healthScore = Math.round((completedCount / 4) * 30 + 70);
 
@@ -110,6 +133,20 @@ export const FieldInspectionScreen: React.FC<FieldInspectionScreenProps> = ({ in
       actionRequired: false,
       syncedToCoop: true,
     };
+
+    if (createInspectionMutation.isPending === false) {
+      try {
+        await createInspectionMutation.mutateAsync({
+          parcelId: 'default',
+          inspectorUserId: 'default',
+          status: 'PLANIFIEE',
+          observation: notesText || "Ronde d'inspection complète",
+          voiceNoteUrl: recordedVoiceNote || undefined,
+        });
+      } catch {
+        // fallback to local
+      }
+    }
 
     onAddInspection(newInspection);
     setIsStartingNewRound(false);
