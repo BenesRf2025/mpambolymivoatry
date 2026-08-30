@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class LoginDto {
   @ApiProperty({ description: 'Numéro de téléphone malgache' })
   @IsString()
-  phoneNumber: string;
+  phone: string;
 
   @ApiProperty({ description: "Mot de passe de l'utilisateur" })
   @IsString()

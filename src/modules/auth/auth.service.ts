@@ -15,11 +15,11 @@ export class AuthService {
 
   async register(dto: CreateUserDto) {
     const user = await this.usersService.create(dto);
-    return this.generateToken(user.id, user.phoneNumber, user.roles);
+    return this.generateToken(user.id, user.phoneNumber, user.roles, user.fullName);
   }
 
   async login(dto: LoginDto) {
-    const user = await this.usersService.findByPhone(dto.phoneNumber);
+    const user = await this.usersService.findByPhone(dto.phone);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
@@ -27,14 +27,24 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides');
     }
 
-    return this.generateToken(user.id, user.phoneNumber, user.roles);
+    return this.generateToken(user.id, user.phoneNumber, user.roles, user.fullName);
   }
 
-  private generateToken(userId: string, phoneNumber: string, roles: string[]) {
+  async getProfile(userId: string) {
+    const user = await this.usersService.findById(userId);
+    return {
+      id: user.id,
+      name: user.fullName,
+      phone: user.phoneNumber,
+      roles: user.roles,
+    };
+  }
+
+  private generateToken(userId: string, phoneNumber: string, roles: string[], fullName?: string) {
     const payload = { sub: userId, phoneNumber, roles };
     return {
-      accessToken: this.jwtService.sign(payload),
-      user: { id: userId, phoneNumber, roles },
+      token: this.jwtService.sign(payload),
+      user: { id: userId, name: fullName, phone: phoneNumber, roles },
     };
   }
 }
