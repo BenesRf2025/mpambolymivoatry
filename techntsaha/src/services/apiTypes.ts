@@ -170,27 +170,39 @@ export type ActivityTrace = {
   timestamp: string;
 };
 
-// Association types
+// Association types (aligned with backend /api/associations)
+export type AssociationType =
+  | 'GROUPEMENT_FAMILIAL'
+  | 'ASSOCIATION_QUARTIER'
+  | 'COOPERATIVE'
+  | 'ENTREPRISE';
+
+export type AssociationMemberRole = 'GESTIONNAIRE' | 'MEMBRE';
+
 export type Association = {
   id: UUID;
   name: string;
+  type: AssociationType;
   description?: string | null;
-  rules?: string | null;
-  creatorId: string;
+  location?: string | null;
+  registrationNumber?: string | null;
+  verified: boolean;
   createdAt: string;
+  members?: AssociationMember[];
 };
-
-export type AssociationMemberStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export type AssociationMember = {
   id: UUID;
   associationId: UUID;
-  familyId: UUID;
   userId: UUID;
-  status: AssociationMemberStatus;
-  joinedAt?: string | null;
-  rejectedAt?: string | null;
-  rejectionReason?: string | null;
-  requestedAt?: string;
+  memberRole: AssociationMemberRole;
+  revenuePercentage: number;
+  joinedAt: string;
+  active: boolean;
   association?: Association;
+};
+
+export type CollectiveStock = {
+  totalKg: number;
+  memberCount: number;
 };

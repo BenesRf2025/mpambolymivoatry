@@ -16,6 +16,9 @@ import {
   ActivityTrace,
   Association,
   AssociationMember,
+  AssociationType,
+  AssociationMemberRole,
+  CollectiveStock,
 } from './apiTypes';
 
 const DEFAULT_BASE = 'http://localhost:3000';
@@ -180,40 +183,78 @@ export const getMyFamily = async (token: string): Promise<Family | null> => {
   return data;
 };
 
-// Associations
-export const createAssociation = async (payload: { name: string; description?: string; rules?: string }, token: string): Promise<Association> => {
-  const { data } = await api.post<Association>('/api/association/create', payload, { headers: { Authorization: `Bearer ${token}` } });
+// Associations (backend: /api/associations)
+export const createAssociation = async (
+  payload: { name: string; type: AssociationType; description?: string; location?: string; registrationNumber?: string },
+  token: string,
+): Promise<Association> => {
+  const { data } = await api.post<Association>('/api/associations', payload, { headers: { Authorization: `Bearer ${token}` } });
   return data;
 };
 
 export const getAllAssociations = async (): Promise<Association[]> => {
-  const { data } = await api.get<Association[]>('/api/association/all');
+  const { data } = await api.get<Association[]>('/api/associations');
   return data;
 };
 
-export const getMyAssociations = async (token: string): Promise<Association[]> => {
-  const { data } = await api.get<Association[]>('/api/association/my', { headers: { Authorization: `Bearer ${token}` } });
+export const getMyMemberships = async (token: string): Promise<AssociationMember[]> => {
+  const { data } = await api.get<AssociationMember[]>('/api/associations/me/list', { headers: { Authorization: `Bearer ${token}` } });
   return data;
 };
 
 export const getAssociationById = async (id: string): Promise<Association> => {
-  const { data } = await api.get<Association>(`/api/association/${id}`);
+  const { data } = await api.get<Association>(`/api/associations/${id}`);
+  return data;
+};
+
+export const getCollectiveStock = async (id: string): Promise<CollectiveStock> => {
+  const { data } = await api.get<CollectiveStock>(`/api/associations/${id}/stock`);
   return data;
 };
 
 export const joinAssociation = async (associationId: string, token: string): Promise<AssociationMember> => {
-  const { data } = await api.post<AssociationMember>('/api/association/join', { associationId }, { headers: { Authorization: `Bearer ${token}` } });
+  const { data } = await api.post<AssociationMember>(
+    `/api/associations/${associationId}/join`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
   return data;
 };
 
-export const approveMember = async (associationMemberId: string, approved: boolean, token: string, rejectionReason?: string): Promise<AssociationMember> => {
-  const { data } = await api.patch<AssociationMember>('/api/association/member/approve', { associationMemberId, approved, rejectionReason }, { headers: { Authorization: `Bearer ${token}` } });
+export const leaveAssociation = async (associationId: string, token: string): Promise<void> => {
+  await api.delete(`/api/associations/${associationId}/leave`, { headers: { Authorization: `Bearer ${token}` } });
+};
+
+export const updateMemberRole = async (
+  associationId: string,
+  userId: string,
+  memberRole: AssociationMemberRole,
+  token: string,
+): Promise<AssociationMember> => {
+  const { data } = await api.patch<AssociationMember>(
+    `/api/associations/${associationId}/members/${userId}/role`,
+    { memberRole },
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
   return data;
 };
 
-export const getPendingRequests = async (associationId: string, token: string): Promise<AssociationMember[]> => {
-  const { data } = await api.get<AssociationMember[]>(`/api/association/${associationId}/pending`, { headers: { Authorization: `Bearer ${token}` } });
+export const updateMemberRevenue = async (
+  associationId: string,
+  userId: string,
+  revenuePercentage: number,
+  token: string,
+): Promise<AssociationMember> => {
+  const { data } = await api.patch<AssociationMember>(
+    `/api/associations/${associationId}/members/${userId}/revenue-percentage`,
+    { revenuePercentage },
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
   return data;
+};
+
+export const removeMember = async (associationId: string, userId: string, token: string): Promise<void> => {
+  await api.delete(`/api/associations/${associationId}/members/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
 };
 
 export default api;

@@ -363,28 +363,40 @@ export interface ActivityTrace {
   timestamp: string;
 }
 
-// Association types
-export type AssociationMemberStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+// Association types (aligned with backend /api/associations)
+export type AssociationType =
+  | 'GROUPEMENT_FAMILIAL'
+  | 'ASSOCIATION_QUARTIER'
+  | 'COOPERATIVE'
+  | 'ENTREPRISE';
+
+export type AssociationMemberRole = 'GESTIONNAIRE' | 'MEMBRE';
 
 export interface Association {
   id: string;
   name: string;
+  type: AssociationType;
   description?: string | null;
-  rules?: string | null;
-  creatorId: string;
+  location?: string | null;
+  registrationNumber?: string | null;
+  verified: boolean;
   createdAt: string;
+  members?: AssociationMember[];
 }
 
 export interface AssociationMember {
   id: string;
   associationId: string;
-  familyId: string;
   userId: string;
-  status: AssociationMemberStatus;
-  joinedAt?: string | null;
-  rejectedAt?: string | null;
-  rejectionReason?: string | null;
-  requestedAt?: string;
+  memberRole: AssociationMemberRole;
+  revenuePercentage: number;
+  joinedAt: string;
+  active: boolean;
   association?: Association;
+}
+
+export interface CollectiveStock {
+  totalKg: number;
+  memberCount: number;
 }
 
