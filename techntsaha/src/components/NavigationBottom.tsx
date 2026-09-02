@@ -13,6 +13,7 @@ import {
   Compass,
   Shield,
   Users2,
+  Radio,
 } from '../lib/icons';
 import { ScreenType, Language, UserRole } from '../types';
 import { translations } from '../data/translations';
@@ -57,6 +58,12 @@ export const NavigationBottom: React.FC<NavigationBottomProps> = ({
             label: language === 'fr' ? 'IoT & Eau' : 'IoT & Rano',
             icon: <Cpu className="w-5 h-5" />,
             badge: 'IoT',
+          },
+          {
+            id: 'blynk_irrigation',
+            label: language === 'fr' ? 'Blynk IoT' : 'Blynk IoT',
+            icon: <Radio className="w-5 h-5" />,
+            badge: 'BLYNK',
           },
           {
             id: 'field_inspection',

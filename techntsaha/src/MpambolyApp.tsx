@@ -36,6 +36,7 @@ import { DiagnosticScreen } from './components/DiagnosticScreen';
 import { GuidesScreen } from './components/GuidesScreen';
 import { ManagementScreen } from './components/ManagementScreen';
 import { SmartIrrigationScreen } from './components/SmartIrrigationScreen';
+import { BlynkIrrigationScreen } from './components/BlynkIrrigationScreen';
 import { FieldInspectionScreen } from './components/FieldInspectionScreen';
 import { SellerShopScreen } from './components/SellerShopScreen';
 import { BuyerHubScreen } from './components/BuyerHubScreen';
@@ -444,6 +445,12 @@ export default function App() {
                 </ScrollView>
               )}
 
+              {currentScreen === 'blynk_irrigation' && (
+                <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
+                  <BlynkIrrigationScreen lang={language} authToken="aV_A2fh2uBfP7z6HbgUalCbCg_QWL2r6" />
+                </ScrollView>
+              )}
+
               {currentScreen === 'field_inspection' && (
                 <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
                   <FieldInspectionScreen inspections={inspections} onAddInspection={handleAddInspection} lang={language} />
@@ -509,7 +516,7 @@ export default function App() {
 
               {currentScreen === 'admin' && (
                 <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
-                  <AdminDashboard language={language} />
+                  <AdminDashboard language={language} apiToken={getAuthToken() ?? undefined} />
                 </ScrollView>
               )}
 

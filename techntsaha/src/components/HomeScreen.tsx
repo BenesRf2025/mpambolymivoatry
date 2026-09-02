@@ -17,6 +17,7 @@ import {
   Users,
   LogOut,
   Check,
+  Radio,
 } from '../lib/icons';
 import {
   Crop,
@@ -192,6 +193,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </Text>
             <Text className="text-[10px] text-[#706B5E] mt-0.5" numberOfLines={1}>
               {sensorNodes[0]?.soilMoisture}% sol · Vannes SRI
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => onNavigate('blynk_irrigation')}
+            className="p-3 bg-[#FAF8F5] rounded-2xl border border-[#E3DFD2]"
+            style={{ width: '48%' }}
+          >
+            <View className="flex-row items-center justify-between mb-1.5">
+              <View className="w-8 h-8 rounded-xl bg-blue-100 items-center justify-center">
+                <Radio className="w-4 h-4 text-blue-800" />
+              </View>
+              <Text className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold">
+                {language === 'fr' ? 'Blynk' : 'Blynk'}
+              </Text>
+            </View>
+            <Text className="font-bold text-xs text-[#2A2621] leading-tight">
+              {language === 'fr' ? 'Irrigation Blynk' : 'Fitantanana Blynk'}
+            </Text>
+            <Text className="text-[10px] text-[#706B5E] mt-0.5" numberOfLines={1}>
+              {language === 'fr' ? 'Cloud MQTT · Vannes' : 'Cloud MQTT · Vannes'}
             </Text>
           </Pressable>
 

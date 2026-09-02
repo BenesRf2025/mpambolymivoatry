@@ -10,6 +10,7 @@ export type ScreenType =
   | 'guides' 
   | 'management'
   | 'smart_irrigation'
+  | 'blynk_irrigation'
   | 'field_inspection'
   | 'seller_shop'
   | 'buyer_hub'
@@ -372,6 +373,8 @@ export type AssociationType =
 
 export type AssociationMemberRole = 'GESTIONNAIRE' | 'MEMBRE';
 
+export type AssociationMemberStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export interface Association {
   id: string;
   name: string;
@@ -389,7 +392,9 @@ export interface AssociationMember {
   associationId: string;
   userId: string;
   memberRole: AssociationMemberRole;
+  status: AssociationMemberStatus;
   revenuePercentage: number;
+  requestedAt?: string;
   joinedAt: string;
   active: boolean;
   association?: Association;
