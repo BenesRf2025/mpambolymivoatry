@@ -48,6 +48,9 @@ export async function createApp() {
     // src/main.ts
     .addTag('Delivery - Profile', 'Profil et disponibilité du livreur')
     .addTag('Delivery', 'Gestion des livraisons')
+    .addTag('IoT - Devices', 'Enregistrement des capteurs')
+    .addTag('IoT - Sensors', 'Réception des données capteurs')
+    .addTag('IoT - Irrigation', 'Configuration et historique irrigation')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -60,7 +63,7 @@ export async function createApp() {
 
 async function bootstrap() {
   const app = await createApp();
-  const port = Number(process.env.PORT) || 3000;
+  const port = Number(process.env.PORT) || 3500;
   await app.listen(port);
 }
 

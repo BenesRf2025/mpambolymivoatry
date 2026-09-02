@@ -61,6 +61,6 @@ import { SyncController } from './sync/sync.controller';
     ListingsService,
     SyncService,
   ],
-  exports: [ParcelService, CropService, HarvestService],
+  exports: [ParcelService, CropService, HarvestService, AiAdviceService],
 })
 export class AgricultureModule {}

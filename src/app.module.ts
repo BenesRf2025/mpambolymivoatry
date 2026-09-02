@@ -9,6 +9,7 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { AssociationModule } from './modules/association/association.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
 import { FamilyModule } from './modules/family/family.module';
+import { IotModule } from './modules/iot/iot.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { FamilyModule } from './modules/family/family.module';
     MarketplaceModule,
     AssociationModule,
     DeliveryModule,
+    IotModule,
   ],
 })
 export class AppModule {}
